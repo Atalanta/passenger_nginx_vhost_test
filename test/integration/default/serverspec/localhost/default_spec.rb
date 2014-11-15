@@ -29,4 +29,17 @@ describe 'Passenger Nginx Vhost Test' do
   it 'should set the document root to /home/deploy/testapp/current/public' do
     expect(file('/etc/nginx/sites-enabled/testapp').content).to match /^\s+root\s+\/home\/deploy\/testapp\/current\/public;$/
   end
+
+  it 'should remove the default nginx vhost' do
+    expect(file('/etc/nginx/sites-enabled/default')).not_to be_file
+  end
+
+  it 'should drop off an SSL cert for the testapp vhost' do
+    expect(file('/etc/nginx/ssl/testapp.net.crt')).to be_file
+    expect(file('/etc/nginx/ssl/testapp.net.key')).to be_file
+  end
+
+  it 'should serve HTTPS traffic encrypted with the test SSL cert' do
+    expect((command 'echo | openssl s_client -connect localhost:443').stdout).to match /CN=testapp\.net/
+  end
 end
